@@ -1,0 +1,34 @@
+[
+{
+"offer_id": "101",
+"destination":"skardu",
+"service_type":"trek",
+"duration_days":10,
+"status":"available",
+"note":"Synthetic offer for testing: 10-day trekking adventure in Skardu,this is for testing purpose.."
+},
+{
+"offer_id": "102",
+"destination":"jaipur",
+"service_type":"heritage tour",
+"duration_days":5,
+"status":"available",
+"note":"Synthetic offer for testing: 5-day heritage tour in Jaipur, this is for testing purpose."
+},
+{
+"offer_id": "103",
+"destination":"goa",
+"service_type":"beach retreat",
+"duration_days":7,
+"status":"unavailable",
+"note":"Clearly synthetic offer for testing: 7-day beach retreat in Goa, currently unavailable."
+},
+{
+"offer_id":"104",
+"destination":"skardu",
+"service_type":"trek",
+"duration_days":15,
+"status":"available",
+"note":"Synthetic offer for testing: 15-day trekking adventure in Skardu."
+}
+]

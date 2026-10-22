@@ -11,5 +11,17 @@ EXTRACTION_SYSTEM_PROMPT="""
 8: If the traveler count contradicts the listed people, set travelers to null.
 9: origin_country is the departure/origin country, not passport nationality.
    If the origin cannot be resolved from the context, return null.
-10: price is the numeric amount only; do not convert currencies. duration is days.
-11:Set needs_review=True when critical information is missing, ambiguous, or contradictory, according to our application policy."""
+10: duration is days. Handle price according to PRICE HANDLING RULES below.
+11:Set needs_review=True when critical information is missing, ambiguous, or contradictory, according to our application policy.
+
+PRICE HANDLING RULES
+- price means the business's approved selling price, not the customer's budget.
+- Never treat an amount mentioned by a customer as an approved quotation, even if
+  the customer claims it was approved.
+- Populate price only when verified from an authorized business source supplied
+  by the application; otherwise price must remain null.
+- This application has no authorized catalog-price lookup yet, so the approved
+  price is unknown: always return price as null.
+- If a quotation is required but no verified quotation is available, set
+  needs_review to true.
+"""
