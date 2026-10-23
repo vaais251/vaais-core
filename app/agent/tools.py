@@ -10,3 +10,5 @@ def lookup_offering(arguments: dict) -> dict:
         return {"status": "invalid_argument"}
 
     return lookup_offer(offering_id)
+
+    

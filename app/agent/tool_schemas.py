@@ -1,4 +1,5 @@
 LOOKUP_OFFERING_SCHEMA={
+  "type": "function",
   "name": "lookup_offering",
   "description": "Retrieves synthetic offers from the local catalog.",
   "parameters": {
