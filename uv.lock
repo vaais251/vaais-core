@@ -1255,6 +1255,7 @@ dependencies = [
     { name = "google-genai" },
     { name = "httpx2" },
     { name = "openai" },
+    { name = "pytest" },
     { name = "python-dotenv" },
     { name = "uvicorn" },
 ]
@@ -1273,6 +1274,7 @@ requires-dist = [
     { name = "google-genai", specifier = ">=2.31.0" },
     { name = "httpx2", specifier = ">=2.13.1" },
     { name = "openai", specifier = ">=3.31.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "uvicorn", specifier = ">=0.54.0" },
 ]
