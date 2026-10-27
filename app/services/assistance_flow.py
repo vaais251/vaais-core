@@ -13,14 +13,12 @@ def process_assistance(
     agent_runner: Callable[..., dict] | None = None,
 ) -> AssistResponse:
 
-    # 1. Extract and validate the customer inquiry
     raw_response = provider.extract(request.inquiry_text)
 
     response = validate_extraction_payload(
         raw_response.model_dump()
     )
 
-    # 2. Preserve unknown fields
     parsed_fields = (
         response.leads[0]
         if response.leads
@@ -97,9 +95,8 @@ def process_assistance(
             for event in events
             if event.actor == "tool"
         ],
-    }
+    },
 
-    # 8. Extract final answer safely
     interaction = result.get("interaction")
     final_text = getattr(interaction, "output_text", None)
 

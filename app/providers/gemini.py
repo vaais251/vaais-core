@@ -4,6 +4,7 @@ from app.schemas import ExtractionResponse
 from app.providers.base import ProviderOutputError, ProviderUnavailableError
 from app.prompts import EXTRACTION_SYSTEM_PROMPT
 
+
 class GeminiProvider:
     def __init__(self, api_key: str, model: str, client=None):
         if not api_key:
@@ -29,7 +30,8 @@ class GeminiProvider:
             )
         except Exception:
             # Deliberately hide SDK exception contents; they may contain secrets.
-            raise ProviderUnavailableError("Gemini API request failed") from None
+            raise ProviderUnavailableError(
+                "Gemini API request failed") from None
 
         try:
             if result.parsed is not None:
@@ -38,4 +40,5 @@ class GeminiProvider:
                 raise ValueError("No structured response")
             return validate_extraction_payload(result.text)
         except (ValidationError, ValueError, TypeError, AttributeError):
-            raise ProviderOutputError("Gemini returned invalid structured output") from None
+            raise ProviderOutputError(
+                "Gemini returned invalid structured output") from None
