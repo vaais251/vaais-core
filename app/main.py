@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 from starlette.concurrency import run_in_threadpool
 from dotenv import load_dotenv
 from app.schemas import ExtractRequest, ExtractionResponse, LeadFields, AssistResponse, AssistRequest
@@ -10,6 +10,7 @@ import uuid
 import os
 from google import genai
 from functools import partial
+from app.storage.demo_store import list_leads
 
 app = FastAPI(
     title="VA-AIS",
@@ -85,3 +86,8 @@ async def assist(request: AssistRequest):
             status_code=502,
             detail="AI provider failed to process the request",
         ) from None
+
+
+@app.get("/leads")
+async def leads_getter(limit: int = Query(default=10, ge=1, le=100), offset: int = Query(default=0, ge=0)):
+    return list_leads(limit, offset)
