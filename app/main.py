@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, status, Query
+import csv
+from io import StringIO
+from fastapi import FastAPI, HTTPException, status, Query, Response
 from starlette.concurrency import run_in_threadpool
 from dotenv import load_dotenv
 from app.schemas import ExtractRequest, ExtractionResponse, LeadFields, AssistResponse, AssistRequest
@@ -10,7 +12,7 @@ import uuid
 import os
 from google import genai
 from functools import partial
-from app.storage.demo_store import list_leads
+from app.storage.demo_store import list_leads, DEMO_LEADS
 
 app = FastAPI(
     title="VA-AIS",
@@ -91,3 +93,24 @@ async def assist(request: AssistRequest):
 @app.get("/leads")
 async def leads_getter(limit: int = Query(default=10, ge=1, le=100), offset: int = Query(default=0, ge=0)):
     return list_leads(limit, offset)
+
+
+@app.get("/leads/export")
+async def export_leads():
+    file = StringIO()
+
+    writer = csv.DictWriter(
+        file,
+        fieldnames=list(DEMO_LEADS[0].keys())
+    )
+
+    writer.writeheader()
+    writer.writerows(DEMO_LEADS)
+
+    return Response(
+        content=file.getvalue(),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": 'attachment; filename="leads.csv"'
+        }
+    )
