@@ -1,6 +1,6 @@
 import csv
 from io import StringIO
-from fastapi import FastAPI, HTTPException, status, Query, Response
+from fastapi import FastAPI, HTTPException, status, Query, Response,Request
 from starlette.concurrency import run_in_threadpool
 from dotenv import load_dotenv
 from app.schemas import ExtractRequest, ExtractionResponse, LeadFields, AssistResponse, AssistRequest
@@ -114,3 +114,9 @@ async def export_leads():
             "Content-Disposition": 'attachment; filename="leads.csv"'
         }
     )
+@app.middleware('http')
+async def middle_ware(request:Request,call_next):
+    request.state.request_id=uuid.uuid4()
+    response=await call_next(request)
+    response.header["X-Request-ID"]=request.state.request_id
+    return response
