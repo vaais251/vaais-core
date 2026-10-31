@@ -13,6 +13,11 @@ import os
 from google import genai
 from functools import partial
 from app.storage.demo_store import list_leads, DEMO_LEADS
+import logging
+import json
+import time
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(
     title="VA-AIS",
@@ -50,19 +55,21 @@ async def extractor(request: ExtractRequest) -> ExtractionResponse:
         ) from None
 
 
+
 @app.post(
     "/assist",
     status_code=status.HTTP_200_OK,
     response_model=AssistResponse
 )
-async def assist(request: AssistRequest):
+async def assist(request: AssistRequest, http_request: Request):
     try:
         provider = get_provider()
     except ValueError:
         raise HTTPException(
             status_code=503,
             detail="Provider configuration error",
-        )
+        ) from None
+
     api_key = os.getenv("GEMINI_API_KEY")
     agent_runner = None
 
@@ -75,19 +82,28 @@ async def assist(request: AssistRequest):
             client=client,
             model_name=model_name,
         )
+
     try:
         return await run_in_threadpool(
             process_assistance,
             request,
             provider,
-            uuid.uuid4().hex,
+            http_request.state.request_id,
             agent_runner,
         )
-    except (ProviderUnavailableError, ProviderOutputError):
+    except ProviderUnavailableError:
+        http_request.state.category="provider_failed"
         raise HTTPException(
             status_code=502,
             detail="AI provider failed to process the request",
         ) from None
+    except ProviderOutputError:
+            http_request.state.category="provider_output_error"
+            raise HTTPException(
+                status_code=502,
+                detail="AI provider failed to process the request",
+            ) from None
+    
 
 
 @app.get("/leads")
@@ -114,9 +130,43 @@ async def export_leads():
             "Content-Disposition": 'attachment; filename="leads.csv"'
         }
     )
-@app.middleware('http')
-async def middle_ware(request:Request,call_next):
-    request.state.request_id=uuid.uuid4()
-    response=await call_next(request)
-    response.header["X-Request-ID"]=request.state.request_id
-    return response
+
+logger = logging.getLogger("uvicorn.error")
+
+
+@app.middleware("http")
+async def middle_ware(request: Request, call_next):
+
+    request.state.request_id = uuid.uuid4().hex
+    request.state.error_category = "none"
+
+    start = time.perf_counter()
+    status_code = 500
+
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+
+        if status_code == 422:
+            request.state.error_category = "invalid_input"
+
+        response.headers["X-Request-ID"] = request.state.request_id
+
+        return response
+
+    except Exception:
+        request.state.error_category = "unexpected_internal_error"
+        raise
+
+    finally:
+        elapsed_ms = (time.perf_counter() - start) * 1000
+
+        log_event = {
+            "request_id": request.state.request_id,
+            "route": request.url.path,
+            "status_code": status_code,
+            "elapsed_ms": round(elapsed_ms, 2),
+            "error_category": request.state.error_category
+        }
+
+        logger.info(json.dumps(log_event))

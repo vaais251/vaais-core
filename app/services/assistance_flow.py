@@ -61,7 +61,7 @@ def process_assistance(
             tool_summary={
                 "agent_status": "not_run",
                 "tools_requested": [],
-                "tool_results": [],
+                "tool_results": []
             },
             needs_review=True,
             request_id=request_id,
